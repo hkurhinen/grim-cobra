@@ -21,6 +21,7 @@
         "socketio-auth" : "*",
         "irc" : "*",
         "webworker-threads" : "*",
-        "underscore": "*"
+        "underscore": "*",
+        "async": "*"
     }
 }
