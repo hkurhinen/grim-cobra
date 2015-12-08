@@ -6,7 +6,6 @@
     "version" : "0.0.1",
     "author" : {
         "name" : "Heikki Kurhinen",
-        "email" : "heikki.kurhinen@gmail.com",
         "url" : "http://elemmings.fi"
     },
     "contributors" : [],
@@ -19,6 +18,9 @@
         "mongoose" : "*",
 		"socket.io" : "*",
 		"express" : "*",
-        "socketio-auth" : "*"
+        "socketio-auth" : "*",
+        "irc" : "*",
+        "webworker-threads" : "*",
+        "underscore": "*"
     }
 }
