@@ -7,7 +7,10 @@ var _server = null;
 var _postError = function(msg){
     postMessage({
        event: 'error',
-       data: msg
+       data: {
+            msg: msg,
+            server: _server
+       }
     });
 };
 
@@ -19,23 +22,23 @@ var _startClient = function(server){
     _client.addListener('message#', function (sender, channel, message) {
         postMessage({
             event: 'message',
-                data: {
-                    server: _server._id,
-                    sender: sender,
-                    channel: channel,
-                    message: message
-                }
+            data: {
+                server: _server,
+                sender: sender,
+                channel: channel,
+                message: message
+            }
         });
     });
     
     _client.addListener('pm', function (sender, message) {
         postMessage({
             event: 'pm',
-                data: {
-                    server: _server._id,
-                    sender: sender,
-                    message: message
-                }
+            data: {
+                server: _server,
+                sender: sender,
+                message: message
+            }
         });
     });
     
@@ -44,7 +47,10 @@ var _startClient = function(server){
             _server.channels.push(channel);
             postMessage({
                event: 'joined',
-               data: channel
+               data:{
+                   server: _server,
+                   channel: channel
+               } 
             });
         }
         //TODO: add support for updating user list
@@ -55,7 +61,10 @@ var _startClient = function(server){
             _server.channels = _.without(_server.channels, channel);
             postMessage({
                event: 'parted',
-               data: channel
+               data:{
+                   server: _server,
+                   channel: channel
+               } 
             });
         }
         //TODO: add support for updating user list
