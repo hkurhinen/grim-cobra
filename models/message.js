@@ -3,6 +3,7 @@ var mongoose = require('mongoose'),
 	
 var messageSchema = new Schema({
      server: Schema.Types.ObjectId,
+     sender: String,
      channel: String,
      time: Number,
      text: String
