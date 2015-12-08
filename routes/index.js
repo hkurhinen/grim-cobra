@@ -1,8 +1,8 @@
-var io = require('socket.io');
+var IO;
 var async = require('async');
-var User = require('../model/user');
-var Message = require('../model/message');
-var Server = require('../model/server');
+var User = require('../models/user');
+var Message = require('../models/message');
+var Server = require('../models/server');
 var _ = require('underscore');
 
 var connectedClients = {};
@@ -101,18 +101,27 @@ function initWorkers(){
 				}
 			});
 		}
+		if(users.length == 0){
+			var user = new User({username: 'test', password: 'qwerty'});
+			user.save(function(err, user){
+				if(!err){
+					console.log('successfully created test user');
+				}
+			})
+		}
 	});
 };
 
-module.exports = function(app){
-
+module.exports = function(app, io){
+	IO = io;
+	
+	initWorkers();
+	
 	app.get('/', function(req, res){
-	  res.sendFile(__dirname + '/../index.html');
+	  res.sendFile(__dirname + '/index.html');
 	});
 	
-	io.listen(app);
-	
-	require('socketio-auth')(io, {
+	require('socketio-auth')(IO, {
 		authenticate: function(socket, data, callback) {
 			var username = data.username;
 			var password = data.password;
