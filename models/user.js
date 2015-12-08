@@ -3,17 +3,10 @@ var mongoose = require('mongoose'),
     bcrypt = require('bcrypt'),
     SALT_WORK_FACTOR = 10;
 
-var serverSchema = new Schema({
-     host: String,
-     port: Number,
-     worker: String,
-     channels : [String] 
-});
-
 var userSchema = new Schema({
     username: { type: String, required: true, index: { unique: true } },
     password: { type: String, required: true },
-    servers: [serverSchema]
+    servers: [Schema.Types.ObjectId]
 });
 
 userSchema.pre('save', function(next) {
