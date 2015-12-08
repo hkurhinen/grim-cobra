@@ -1,5 +1,5 @@
 {
-    "name" : "Grim Cobra", 
+    "name" : "grim-cobra", 
     "description" : "Cloud based IRC-service to make following your favourite IRC-channels easier.",
     "keywords" : ["irc", "cloud", "elemmings"],
     "homepage" : "http://elemmings.fi",
@@ -22,6 +22,7 @@
         "irc" : "*",
         "webworker-threads" : "*",
         "underscore": "*",
-        "async": "*"
+        "async": "*",
+        "bcrypt": "*"
     }
 }
