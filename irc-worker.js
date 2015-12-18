@@ -1,29 +1,63 @@
 var irc = require('irc');
 var _ = require('underscore');
+var events = require('events');
 
-var _client = null;
-var _server = null;
-
-var _postError = function(msg){
-    postMessage({
-       event: 'error',
-       data: {
-            msg: msg,
-            server: _server
-       }
-    });
-};
-
-var _startClient = function(server){
-    _server = server;
-    _client = new irc.Client(server.host, server.nick, {
+var Worker = function(server){
+    this._server = server;
+    this._client = new irc.Client(server.host, server.nick, {
         channels: server.channels
     });
-    _client.addListener('message#', function (sender, channel, message) {
-        postMessage({
+    
+    var _this = this;
+    
+    this.partChannel = function(channel){
+        if(_this._client){
+            _this._client.part(channel, function(){});
+        }else{
+            _this.postError('Client not connected to server');
+        }
+    };
+    
+    this.joinChannel = function(channel){
+        if(_this._client){
+             _this._client.join(channel, function(){});
+        }else{
+            _this.postError('Client not connected to server');
+        }
+    };
+    
+    this.say = function(target, message){
+        if(_this._client){
+             _this._client.say(target, message);
+        }else{
+            _this.postError('Client not connected to server');
+        }
+    };
+    
+    this.stopClient = function(){
+        if(_this._client){
+            _this._client.disconnect(function(){
+                _this.emit('message', {event: 'stopped'});
+            });  
+        }
+    };
+    
+    this.postError = function(msg){
+        _this.emit('message', {
+           event: 'error',
+           data: {
+                msg: msg,
+                server: _this._server
+           }
+        });
+    };
+   
+   
+    this._client.addListener('message#', function (sender, channel, message) {
+        _this.emit('message', {
             event: 'message',
             data: {
-                server: _server,
+                server: _this._server,
                 sender: sender,
                 channel: channel,
                 message: message
@@ -31,24 +65,24 @@ var _startClient = function(server){
         });
     });
     
-    _client.addListener('pm', function (sender, message) {
-        postMessage({
+    this._client.addListener('pm', function (sender, message) {
+        _this.emit('message', {
             event: 'pm',
             data: {
-                server: _server,
+                server: _this._server,
                 sender: sender,
                 message: message
             }
         });
     });
     
-    _client.addListener('join', function(channel, nick, reason, message) {
-        if(nick === _client.nick && _.indexOf(_server.channels, channel) === -1){
-            _server.channels.push(channel);
-            postMessage({
+    this._client.addListener('join', function(channel, nick, reason, message) {
+        if(nick === _this._client.nick && _.indexOf(_this._server.channels, channel) === -1){
+            _this._server.channels.push(channel);
+            _this.emit('message', {
                event: 'joined',
                data:{
-                   server: _server,
+                   server: _this._server,
                    channel: channel
                } 
             });
@@ -56,13 +90,13 @@ var _startClient = function(server){
         //TODO: add support for updating user list
     });
     
-    _client.addListener('part', function(channel, nick, reason, message) {
-        if(nick === _client.nick){
-            _server.channels = _.without(_server.channels, channel);
-            postMessage({
+    this._client.addListener('part', function(channel, nick, reason, message) {
+        if(nick === _this._client.nick){
+            _this._server.channels = _.without(_this._server.channels, channel);
+            _this.emit('message', {
                event: 'parted',
                data:{
-                   server: _server,
+                   server: _this._server,
                    channel: channel
                } 
             });
@@ -70,65 +104,32 @@ var _startClient = function(server){
         //TODO: add support for updating user list
     });
     
-    _client.addListener('error', function(message) {
-        _postError(message);
+    this._client.addListener('error', function(message) {
+        _this.postError(message);
     });
+    
 };
 
-var _partChannel = function(channel){
-    if(_client){
-        _client.part(channel, function(){});
-    }else{
-        _postError('Client not connected to server');
-    }
+Worker.prototype = new events.EventEmitter;
+
+Worker.prototype.stop = function(){
+    this.stopClient();
 };
 
-var _joinChannel = function(channel){
-    if(_client){
-         _client.join(channel, function(){});
-    }else{
-        _postError('Client not connected to server');
-    }
+Worker.prototype.say = function(channel, message){
+    this.say(channel, message);
 };
 
-var _say = function(target, message){
-    if(_client){
-         _client.say(target, message);
-    }else{
-        _postError('Client not connected to server');
-    }
+Worker.prototype.pm = function(to, message){
+    this.say(to, message);
 };
 
-var _stopClient = function(){
-    if(_client){
-        _client.disconnect(function(){
-            postMessage({event: 'stopped'});
-        });  
-    }
+Worker.prototype.part = function(channel){
+    this.partChannel(channel);
 };
 
-this.onmessage = function (e) {
-  var action = e.data.action;
-  switch(action) {
-    case 'start':
-        _startClient(e.data.server);
-        break;
-    case 'stop':
-        _stopClient();
-        break;
-    case 'say':
-        _say(e.data.channel, e.data.message);
-        break;
-    case 'pm':
-        _say(e.data.to, e.data.message);
-        break;
-    case 'part':
-        _partChannel(e.data.channel);
-        break;
-    case 'join':
-        _joinChannel(e.data.channel);
-        break;
-    default:
-        _postError('unknown action: '+action+' requested');
-  }
-}
+Worker.prototype.join = function(channel){
+    this.joinChannel(channel);
+};
+
+module.exports = Worker;
