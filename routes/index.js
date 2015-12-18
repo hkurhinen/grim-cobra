@@ -1,6 +1,7 @@
 var IO;
 var async = require('async');
 var User = require('../models/user');
+var Worker = require('../irc-worker');
 var Message = require('../models/message');
 var Server = require('../models/server');
 var _ = require('underscore');
@@ -16,7 +17,7 @@ function handleMessage(data){
 	message.time = new Date().getTime();
 	message.text = data.message;
 	message.save(function(err, message){
-		if(connectedClients.indexOf(data.server.user) !== -1){
+		if(_.has(connectedClients, data.server.user)){
 			connectedClients[data.server.user].emit('new-message', message);
 		}
 	});
@@ -30,7 +31,7 @@ function handleJoin(data){
 	Server.findById(data.server._id, function(err, server){
 		server.channels.push(data.channel);
 		server.save(function(err, server){
-			if(connectedClients.indexOf(server.user) !== -1){
+			if(_.has(connectedClients, server.user)){
 				connectedClients[server.user].emit('joined-channel', data.channel);
 			}
 		});
@@ -41,7 +42,7 @@ function handlePart(data){
 	Server.findById(data.server._id, function(err, server){
 		server.channels = _.without(server.channels, data.channel);
 		server.save(function(err, server){
-			if(connectedClients.indexOf(server.user) !== -1){
+			if(_.has(connectedClients, server.user)){
 				connectedClients[server.user].emit('parted-channel', data.channel);
 			}
 		});
@@ -52,62 +53,38 @@ function handleError(data){
 	console.log('Worker reported error: '+data.msg);
 }
 
-function initWorkers(){
-	User.find({}, function(err, users){
-		if(!err){
-			async.each(users, function(user, usercb){
-				async.each(user.servers, function(server, servercb){
-					Server.findById(server, function(err, server){
-						if(err){
-							servercb(err);
-						}else{
-							workers[server._id] = new Worker('../irc-worker.js');
-							workers[server._id].onmessage = function(e) {
-							  var eventType = e.data.event;
-							  switch(eventType) {
-							  	case 'message':
-								  	handleMessage(e.data.data);
-									break;
-								case 'pm':
-									handlePm(e.data.data);
-									break;
-								case 'joined':
-									handleJoin(e.data.data);
-									break;
-								case 'parted':
-									handlePart(e.data.data);
-									break;
-								default:
-									handleError(e.data.data);
-								  
-							  } 
-							};
-							workers[server._id].postMessage({action: 'start', server: server});
-							servercb();
-						}
-						
-					})
+function startWorker(server){
+	workers[server._id] = new Worker(server);
+	workers[server._id].on('message', function(e) {
+		var eventType = e.event;
+		switch(eventType) {
+			case 'message':
+			  	handleMessage(e.data);
+				break;
+			case 'pm':
+				handlePm(e.data);
+				break;
+			case 'joined':
+				handleJoin(e.data);
+				break;
+			case 'parted':
+				handlePart(e.data);
+				break;
+			default:
+				handleError(e.data);
+		} 
+	});
+};
 
-				}, function(err){
-					if(err){
-						usercb(err);
-					}else{
-						usercb();
-					}
-				});
-			}, function(err){
-				if(err){
-					console.log('Failed to initialize workers');
-				}
-			});
-		}
-		if(users.length == 0){
-			var user = new User({username: 'test', password: 'qwerty'});
-			user.save(function(err, user){
-				if(!err){
-					console.log('successfully created test user');
-				}
-			})
+function initWorkers(){
+	Server.find({}, function(err, servers){
+		if(err){
+			console.log('Failed to initialize workers');
+		}else{
+			for(var i = 0; i < servers.length;i++){
+				var server = servers[i];
+				startWorker(server);
+			}	
 		}
 	});
 };
@@ -139,7 +116,67 @@ module.exports = function(app, io){
 			User.findOne({username:username}, function(err, user){
 				socket.client.user = user;
 				connectedClients[user._id] = socket;
+				socket.on('disconnect', function() {
+					delete connectedClients[user._id];
+				});
+				socket.on('server-added', function(data){
+					var server = new Server();
+					server.host = data.host;
+					server.port = data.port;
+					server.nick = data.nick;
+					server.user = user._id;
+					server.channels = [];
+					server.save(function(err, server){
+						if(err){
+							console.log('Error adding server: '+err);
+						}else{
+							startWorker(server);
+						}
+					})
+				});
+				socket.on('join-channel', function(data){
+					Server.findById(data.server, function(err, server){
+						if(err || !server){
+							console.log('Error joining channel');
+						}else{
+							server.channels.push(data.channel);
+							server.save(function(err, server){
+								if(typeof(workers[server._id]) !== 'undefined'){
+									workers[server._id].join(data.channel);
+								}else{
+									console.log('Tried to join channel without connecting to server, connecting now.');
+									startWorker(server);
+								}
+							});
+						}
+					});
+				});
+				socket.on('part-channel', function(data){
+					Server.findById(data.server, function(err, server){
+						if(err || !server){
+							console.log('Error parting channel');
+						}else{
+							server.channels = _.without(server.channels, data.channel);
+							server.save(function(err, server){
+								if(typeof(workers[server._id]) !== 'undefined'){
+									workers[server._id].part(data.channel);
+								}else{
+									console.log('Tried to part channel without connecting to server, connecting now.');
+									startWorker(server);
+								}
+							});
+						}
+					});
+				});
+				socket.on('send-message', function(data){
+					if(typeof(workers[data.server]) !== 'undefined'){
+						workers[data.server].say(data.channel, data.message);
+					}else{
+						console.log('Tried to send message without connecting to server');
+					}
+				});
 			});
+
 		},
 		timeout: 1000
 	});
