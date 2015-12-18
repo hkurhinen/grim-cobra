@@ -5,7 +5,7 @@ var serverSchema = new Schema({
      host: String,
      user: Schema.Types.ObjectId,
      port: Number,
-     worker: String,
+     nick: String,
      channels : [String] 
 });
 
