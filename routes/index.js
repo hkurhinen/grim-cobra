@@ -119,6 +119,9 @@ module.exports = function(app, io){
 				socket.on('disconnect', function() {
 					delete connectedClients[user._id];
 				});
+				socket.on('logout', function() {
+					socket.disconnect();
+				});
 				socket.on('server-added', function(data){
 					var server = new Server();
 					server.host = data.host;
