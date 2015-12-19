@@ -3,13 +3,14 @@
 <head>
 	<meta charset=utf-8 />
 	<title></title>
+	<link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
 	<link rel="stylesheet" type="text/css" media="screen" href="css/main.css" />
-	<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.min.js"></script>
-    <script src="/socket.io/socket.io.js"></script>
+  	<script src="//code.jquery.com/jquery-1.10.2.js"></script>
+    <script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+	<script src="/socket.io/socket.io.js"></script>
     <script type="text/javascript" src="/js/main.js"></script>
 </head>
 <body>
- 	<h1>ELEMMINGS IRC CLOUD</h1>
 	<div id="loginForm">
 		<p>Username:<input type="text" id="usernameInput" /></p>
 		<p>Password:<input type="password" id="passwordInput" /></p>
@@ -17,9 +18,24 @@
 	</div>
 	<div id="loggedView" style="display:none;">
 		<button id="logoutBtn">logout</button>
-		<div id="messageContainer"></div>
+		<button id="join-channel-button">Join channel</button>
+		<div id="tabs">
+			<ul>
+		    </ul>
+	    </div>
 		<br/>
-		<div><input type="text" id="messageText" /><button id="sendMessage">send</button></div>
+		<div><input type="text" id="messageText" class="ui-widget-content ui-corner-all" /><button id="sendMessage">send</button></div>
+		<div id="join-channel-dialog" title="Join channel">
+		  <form>
+		    <fieldset class="ui-helper-reset">
+		      <label for="new-channel">Channel</label>
+		      <input type="text" id="new-channel" class="ui-widget-content ui-corner-all">
+		      <label for="new-channel-server">Server</label>
+		      <select id="new-channel-server" class="ui-widget-content ui-corner-all">
+			  </select>
+		    </fieldset>
+		  </form>
+		</div>
 	</div>
 </body>
 </html>
