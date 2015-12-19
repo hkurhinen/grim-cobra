@@ -32,7 +32,7 @@ function handleJoin(data){
 		server.channels.push(data.channel);
 		server.save(function(err, server){
 			if(_.has(connectedClients, server.user)){
-				connectedClients[server.user].emit('joined-channel', data.channel);
+				connectedClients[server.user].emit('joined-channel', {server:data.server._id,  channel:data.channel});
 			}
 		});
 	});
@@ -116,6 +116,15 @@ module.exports = function(app, io){
 			User.findOne({username:username}, function(err, user){
 				socket.client.user = user;
 				connectedClients[user._id] = socket;
+				
+				Server.find({user: user._id}, function(err, servers){
+					if(err){
+						console.log('Error fetching servers for user');
+					}else{
+						socket.emit('connection-init', {servers: servers});
+					}
+				});
+				
 				socket.on('disconnect', function() {
 					delete connectedClients[user._id];
 				});
@@ -138,38 +147,18 @@ module.exports = function(app, io){
 					})
 				});
 				socket.on('join-channel', function(data){
-					Server.findById(data.server, function(err, server){
-						if(err || !server){
-							console.log('Error joining channel');
-						}else{
-							server.channels.push(data.channel);
-							server.save(function(err, server){
-								if(typeof(workers[server._id]) !== 'undefined'){
-									workers[server._id].join(data.channel);
-								}else{
-									console.log('Tried to join channel without connecting to server, connecting now.');
-									startWorker(server);
-								}
-							});
-						}
-					});
+					if(typeof(workers[data.server]) !== 'undefined'){
+						workers[data.server].join(data.channel);
+					}else{
+						console.log('Tried to join channel without connecting to server');
+					}
 				});
 				socket.on('part-channel', function(data){
-					Server.findById(data.server, function(err, server){
-						if(err || !server){
-							console.log('Error parting channel');
-						}else{
-							server.channels = _.without(server.channels, data.channel);
-							server.save(function(err, server){
-								if(typeof(workers[server._id]) !== 'undefined'){
-									workers[server._id].part(data.channel);
-								}else{
-									console.log('Tried to part channel without connecting to server, connecting now.');
-									startWorker(server);
-								}
-							});
-						}
-					});
+					if(typeof(workers[data.server]) !== 'undefined'){
+						workers[data.server].part(data.channel);
+					}else{
+						console.log('Tried to part channel without connecting to server');
+					}
 				});
 				socket.on('send-message', function(data){
 					if(typeof(workers[data.server]) !== 'undefined'){
