@@ -1,41 +1,76 @@
 <!DOCTYPE html>
-<html>
-<head>
-	<meta charset=utf-8 />
-	<title></title>
-	<link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
-	<link rel="stylesheet" type="text/css" media="screen" href="css/main.css" />
-  	<script src="//code.jquery.com/jquery-1.10.2.js"></script>
-    <script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
-	<script src="/socket.io/socket.io.js"></script>
-    <script type="text/javascript" src="/js/main.js"></script>
-</head>
-<body>
-	<div id="loginForm">
-		<p>Username:<input type="text" id="usernameInput" /></p>
-		<p>Password:<input type="password" id="passwordInput" /></p>
-		<p><button id="loginBtn">login</button></p>
-	</div>
-	<div id="loggedView" style="display:none;">
-		<button id="logoutBtn">logout</button>
-		<button id="join-channel-button">Join channel</button>
-		<div id="tabs">
-			<ul>
-		    </ul>
-	    </div>
-		<br/>
-		<div><input type="text" id="messageText" class="ui-widget-content ui-corner-all" /><button id="sendMessage">send</button></div>
-		<div id="join-channel-dialog" title="Join channel">
-		  <form>
-		    <fieldset class="ui-helper-reset">
-		      <label for="new-channel">Channel</label>
-		      <input type="text" id="new-channel" class="ui-widget-content ui-corner-all">
-		      <label for="new-channel-server">Server</label>
-		      <select id="new-channel-server" class="ui-widget-content ui-corner-all">
-			  </select>
-		    </fieldset>
-		  </form>
+<html lang="en">
+	<head>
+	    <meta charset="utf-8">
+	    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+	    <meta name="viewport" content="width=device-width, initial-scale=1">
+	    <meta name="description" content="">
+	    <meta name="author" content="">
+	
+	    <title>Simple Sidebar - Start Bootstrap Template</title>
+		
+	    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+	    <link rel="stylesheet" type="text/css" media="screen" href="css/template.css" />
+		<link rel="stylesheet" type="text/css" media="screen" href="css/login.css" />
+		<link rel="stylesheet" type="text/css" media="screen" href="css/main.css" />
+	</head>
+	<body>
+		<div id="login-wrapper">
+			<div class="container">
+			    <div class="row">
+			        <div class="col-md-12">
+			            <div class="wrap">
+			                <p class="form-title">
+			                    Sign In</p>
+			                <form class="login">
+				                <input name="username" type="text" placeholder="Username" />
+				                <input name="password" type="password" placeholder="Password" />
+				                <input type="submit" value="Sign In" class="btn btn-success btn-sm" />
+			                </form>
+			            </div>
+			        </div>
+			    </div>
+			</div>
 		</div>
-	</div>
-</body>
+	    <div id="wrapper">
+	        <div id="sidebar-wrapper">
+	            <ul class="sidebar-nav">
+	                <li class="sidebar-brand">
+	                    <a href="#">
+	                        Start Bootstrap
+	                    </a>
+	                </li>
+	            </ul>
+	        </div>
+	        <div id="page-content-wrapper">
+	            <div class="container-fluid">
+	                <div class="row">
+	                    <div class="col-lg-12">
+	                        <a href="#menu-toggle" class="btn btn-default" id="menu-toggle">Toggle Menu</a>
+							<div class="channels"></div>
+							<div class="row">
+								<div class="col-xs-12">
+							    	<div class="input-group">
+										<div id="current-nickname" class="input-group-addon"></div>
+								    	<input id="message-content" type="text" class="form-control" />
+										<span class="input-group-btn">
+											<button id="send-message-button" class="btn btn-success">Send</button>
+										</span>
+									</div>
+								</div>
+							</div>
+	                    </div>
+	                </div>
+	            </div>
+	        </div>
+	    </div>
+	
+	  	<script src="//code.jquery.com/jquery-2.1.4.min.js"></script>
+    	<script src="//code.jquery.com/ui/1.11.4/jquery-ui.min.js"></script>
+		<script src="/socket.io/socket.io.js"></script>
+	    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+		<script type="text/javascript" src="/lib/bootbox/bootbox.min.js"></script>
+		<script type="text/javascript" src="http://momentjs.com/downloads/moment-with-locales.min.js"></script>
+		<script type="text/javascript" src="/js/main.js"></script>
+	</body>
 </html>
