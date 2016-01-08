@@ -1,6 +1,7 @@
 var IO;
 var async = require('async');
 var User = require('../models/user');
+var UserFile = require('../models/userFile');
 var Worker = require('../irc-worker');
 var Message = require('../models/message');
 var Server = require('../models/server');
@@ -98,6 +99,17 @@ module.exports = function(app, io){
 	  res.sendFile(__dirname + '/index.html');
 	});
 	
+	app.get('/usercontent/:id', function(req, res){
+		UserFile.findById(req.params.id, function(err, userFile){
+			if(err || !userFile){
+				res.status(404).send();
+			}else{
+				res.contentType(userFile.contentType);
+          		res.send(userFile.data);
+			}
+		})
+	});
+	
 	require('socketio-auth')(IO, {
 		authenticate: function(socket, data, callback) {
 			var username = data.username;
@@ -124,7 +136,18 @@ module.exports = function(app, io){
 						socket.emit('connection-init', {servers: servers});
 					}
 				});
-				
+				socket.on('file-upload', function(data){
+					var userFile = new UserFile();
+					userFile.data = data.filedata;
+					userFile.contentType = data.filetype;
+					userFile.save(function(err, userFile){
+						if(err){
+							console.log('Error saving file');
+						}else{
+							socket.emit('file-uploaded', {id: userFile._id});
+						}
+					});
+				});
 				socket.on('disconnect', function() {
 					delete connectedClients[user._id];
 				});
