@@ -28,7 +28,16 @@ var Worker = function(server){
     
     this.say = function(target, message){
         if(_this._client){
-             _this._client.say(target, message);
+            _this._client.say(target, message);
+            _this.emit('message', { //TODO: dirty hax since client doesnt react to own messages
+                event: 'message',
+                data: {
+                    server: _this._server,
+                    sender: _this._client.nick,
+                    channel: target,
+                    message: message
+                }
+            });
         }else{
             _this.postError('Client not connected to server');
         }
