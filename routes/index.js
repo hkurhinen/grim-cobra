@@ -165,6 +165,7 @@ module.exports = function(app, io){
 						if(err){
 							console.log('Error adding server: '+err);
 						}else{
+							socket.emit('connected-to-server', {server: server});
 							startWorker(server);
 						}
 					})
