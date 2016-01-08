@@ -43,7 +43,7 @@ function handlePart(data){
 		server.channels = _.without(server.channels, data.channel);
 		server.save(function(err, server){
 			if(_.has(connectedClients, server.user)){
-				connectedClients[server.user].emit('parted-channel', data.channel);
+				connectedClients[server.user].emit('parted-channel', {server:data.server._id,  channel:data.channel});
 			}
 		});
 	});
@@ -166,6 +166,17 @@ module.exports = function(app, io){
 					}else{
 						console.log('Tried to send message without connecting to server');
 					}
+				});
+				socket.on('get-messages', function(data){
+					Message.find({server:data.server, channel: data.channel})
+						.sort({ time: 1 })
+						.exec(function(err, messages){
+						if(err){
+							console.log('Error fetching messages');
+						}else{
+							socket.emit('previous-messages', {messages: messages});
+						}
+					});
 				});
 			});
 
