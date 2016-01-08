@@ -111,6 +111,7 @@
 			}); 
 		});
 		
+		
 		$('form.login').submit(function(e){
 			e.preventDefault();
 			var formValues = {};
@@ -159,8 +160,23 @@
 					}
 				});
 				
+				socket.on('file-uploaded', function(data){
+					$('#message-content').val(window.location.href+'usercontent/'+data.id);
+				});
+				
 				$('#logoutBtn').button().click(function(){
 					socket.emit('logout');
+				});
+				
+				$('#message-content').on('drop', function(e){
+					e.stopPropagation();
+				    e.preventDefault();
+				    var files = e.originalEvent.dataTransfer.files;
+					if(files.length > 0){
+						for(var i = 0; i < files.length; i++){
+							socket.emit('file-upload', {filedata: files[i], filetype: files[i].type, filename: files[i].name});
+						}
+					}
 				});
 				
 				socket.on('disconnect', function(e){
