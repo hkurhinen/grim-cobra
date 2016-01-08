@@ -2,6 +2,27 @@
 	'use strict';
 	$(document).ready(function(){
 		
+	 var newServerDialog = '<div class="form-horizontal">'+
+						'  <div class="form-group">'+
+						'    <label for="new-server-host" class="col-sm-2 control-label">Host</label>'+
+						'    <div class="col-sm-10">'+
+						'      <input type="text" class="form-control" id="new-server-host" placeholder="Host">'+
+						'    </div>'+
+						'  </div>'+
+						'  <div class="form-group">'+
+						'    <label for="new-server-port" class="col-sm-2 control-label">Port</label>'+
+						'    <div class="col-sm-10">'+
+						'      <input type="text" class="form-control" id="new-server-port" placeholder="Port">'+
+						'    </div>'+
+						'  </div>'+
+						'  <div class="form-group">'+
+						'    <label for="new-server-nick" class="col-sm-2 control-label">Nick</label>'+
+						'    <div class="col-sm-10">'+
+						'      <input type="text" class="form-control" id="new-server-nick" placeholder="Nick">'+
+						'    </div>'+
+						'  </div>'+
+						'</div>';
+		
 		var servers = [];
 		var socket;
 		
@@ -48,6 +69,10 @@
 			messageContainer.find('.channel-messages').scrollTop(messageContainer.find('.channel-messages')[0].scrollHeight);
 		}
 		
+		function connectToServer(host, port, nick){
+			socket.emit('server-added', {host:host, port:port, nick: nick});
+		}
+		
 		function joinChannel(server, channel){
 			socket.emit('join-channel', {server:server, channel: channel});
 		}
@@ -59,6 +84,25 @@
 		function handleResize(){
 			var messagesHeight = $(window).height() - 200;
 			$('.channel-messages').css('height', messagesHeight+'px');
+		}
+		
+		function showConnectToServerDialog(){
+			bootbox.dialog({
+                title: 'Connect to server',
+                message: newServerDialog,
+				buttons: {
+                    success: {
+                        label: "Save",
+                        className: "btn-success",
+                        callback: function () {
+							var host = $('#new-server-host').val();
+							var port = $('#new-server-port').val();
+							var nick = $('#new-server-nick').val();
+							connectToServer(host, port, nick);
+                        }
+                    }
+                }
+            });				   
 		}
 		
 		function addMessage(data){
@@ -140,6 +184,14 @@
 							addChannel(server._id, server.channels[j]);
 						}
 					}
+					if(!servers || servers.length == 0){
+						showConnectToServerDialog();
+					}
+				});
+				
+				socket.on('connected-to-server', function(data){
+					servers.push(data.server);
+					addServer(data.server);
 				});
 				
 				socket.on('new-message', function(data){
