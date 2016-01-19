@@ -43,6 +43,18 @@ var Worker = function(server){
         }
     };
     
+    this.getConnectionInfo = function(){
+      if(_this._client){
+        _this.emit('message', {
+          event: 'connection-info',
+          data: {
+            server: _this._server,
+            info: _this._client.chans
+          }
+        });
+      }
+    }
+    
     this.stopClient = function(){
         if(_this._client){
             _this._client.disconnect(function(){
@@ -147,6 +159,10 @@ var Worker = function(server){
 };
 
 Worker.prototype = new events.EventEmitter;
+
+Worker.prototype.getInfo = function(){
+  this.getConnectionInfo();
+}
 
 Worker.prototype.stop = function(){
     this.stopClient();
