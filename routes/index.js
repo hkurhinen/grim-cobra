@@ -50,6 +50,14 @@ function handlePart(data){
 	});
 }
 
+function handleNames(data){
+  Server.findById(data.server._id, function(err, server){
+    if(_.has(connectedClients, server.user)){
+    	connectedClients[server.user].emit('names', {server:data.server._id,  channel:data.channel, nicks: data.nicks});
+    }
+	});
+}
+
 function handleError(data){
 	console.log('Worker reported error: '+data.msg);
 }
@@ -71,6 +79,9 @@ function startWorker(server){
 			case 'parted':
 				handlePart(e.data);
 				break;
+      case 'names':
+        handleNames(e.data);
+        break;
 			default:
 				handleError(e.data);
 		} 
