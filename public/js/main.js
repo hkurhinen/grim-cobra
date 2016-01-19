@@ -47,7 +47,12 @@
 				'<div class="channel" data-server="'+server+'" data-channel="'+channel+'">'+
 					'<div class="panel panel-success">' +
 					  '<div class="panel-heading"><h3 class="panel-title">'+channel+' @ '+getServerData(server).host+'</h3></div>' +
-					  '<div class="channel-messages panel-body"></div>' +
+					  '<div class="panel-body channel-container">'+
+              '<div class="row">'+
+                '<div class="col-xs-10 channel-messages"></div>'+
+                '<div class="col-xs-2"><ul class="channel-users pull-right"></ul></div>'+
+              '</div>'+
+            '</div>' +
 					'</div>' +
 				'</div>' 
 			);
@@ -56,6 +61,31 @@
 			switchChannel(server, channel);
 		};
 		
+    function replaceUserList(server, channel, users){
+      var channelElement = $('.channel[data-server="'+server+'"][data-channel="'+channel+'"]');
+			channelElement.find('.channel-users').empty();
+      for(var i = 0; i < users.ops.length; i++){
+        channelElement.find('.channel-users').append('<li data-level="@" data-nick="'+users.ops[i]+'">@'+users.ops[i]+'</li>');
+      }
+      for(var i = 0; i < users.voices.length; i++){
+        channelElement.find('.channel-users').append('<li data-level="+" data-nick="'+users.voices[i]+'">+'+users.voices[i]+'</li>');
+      }
+      for(var i = 0; i < users.users.length; i++){
+        channelElement.find('.channel-users').append('<li data-level="" data-nick="'+users.users[i]+'">'+users.users[i]+'</li>');
+      }
+    }
+    
+    function addUser(server, channel, user){
+      //TODO: how to get the users level?
+      var channelElement = $('.channel[data-server="'+server+'"][data-channel="'+channel+'"]');
+      channelElement.find('.channel-users').append('<li data-level="" data-nick="'+user+'">'+user+'</li>');
+    }
+    
+    function removeUser(server, channel, user){
+      var channelElement = $('.channel[data-server="'+server+'"][data-channel="'+channel+'"]');
+      channelElement.find('.channel-users').find('li[data-nick="'+user+'"]').remove();
+    }
+    
 		function removeChannel(server, channel){
 			$('ul.sidebar-nav').find('.server-container[data-server="'+server+'"] > ul').find('a[data-server="'+server+'"][data-channel="'+channel+'"]').parent().remove();
 			$('.channel[data-server="'+server+'"][data-channel="'+channel+'"]').remove();
@@ -83,7 +113,7 @@
 		
 		function handleResize(){
 			var messagesHeight = $(window).height() - 200;
-			$('.channel-messages').css('height', messagesHeight+'px');
+			$('.channel-container').css('height', messagesHeight+'px');
 		}
 		
 		function showConnectToServerDialog(){
@@ -108,7 +138,7 @@
 		function addMessage(data){
 			var sent = moment(data.time);
 	        var channel = $('.channel[data-server="'+data.server+'"][data-channel="'+data.channel+'"]');
-			channel.find('.panel-body').append('<p>'+sent.format('D.M.YYYY H:M')+' &lt;'+data.sender+'&gt; '+data.text+'</p>');
+			channel.find('.channel-messages').append('<p>'+sent.format('D.M.YYYY H:M')+' &lt;'+data.sender+'&gt; '+data.text+'</p>');
 		}
 		
 		$(window).resize(function() {
@@ -205,6 +235,24 @@
 				socket.on('parted-channel', function(data){
 					removeChannel(data.server, data.channel);
 				});
+        
+        socket.on('names', function(data){
+          var ops = [];
+          var voices = [];
+          var users = [];
+          for(var nick in data.nicks){
+            if(data.nicks.hasOwnProperty(nick)){
+              if(data.nicks[nick] == '@'){
+                ops.push(nick);
+              }else if(data.nicks[nick] == '+'){
+                voices.push(nick);
+              }else{
+                users.push(nick);
+              }
+            }
+          }
+          replaceUserList(data.server, data.channel, {ops: ops, voices: voices, users: users});
+        });
 				
 				socket.on('previous-messages', function(data){
 					for(var i = 0; i < data.messages.length;i++){
@@ -213,7 +261,8 @@
 				});
 				
 				socket.on('file-uploaded', function(data){
-					$('#message-content').val(window.location.href+'usercontent/'+data.id);
+					var target = $('.channel.active');
+					socket.emit('send-message', {server:target.attr('data-server'), channel: target.attr('data-channel'), message: window.location.href+'usercontent/'+data.id});
 				});
 				
 				$('#logoutBtn').button().click(function(){

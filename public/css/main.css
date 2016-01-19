@@ -27,3 +27,6 @@ html, body
 	font-size: 12px;
 	line-height: 1;
 }
+.channel-users {
+  list-style-type: none;
+}
