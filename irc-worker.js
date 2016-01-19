@@ -127,7 +127,6 @@ var Worker = function(server){
             } 
           });
         }
-        //TODO: add support for updating user list
     });
     
     this._client.addListener('names', function(channel, nicks){
