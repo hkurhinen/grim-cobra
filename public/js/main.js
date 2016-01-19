@@ -296,6 +296,15 @@
 						}
 					}
 				});
+        
+        $('#message-content').keypress(function(event){      
+          var keycode = (event.keyCode ? event.keyCode : event.which);
+          if(keycode == '13'){
+            var target = $('.channel.active');
+            socket.emit('send-message', {server:target.attr('data-server'), channel: target.attr('data-channel'), message: $('#message-content').val()});	
+            $('#message-content').val('');
+          }
+        });
 				
 				socket.on('disconnect', function(e){
 					$('#loggedView').hide();
