@@ -113,6 +113,17 @@ var Worker = function(server){
         //TODO: add support for updating user list
     });
     
+    this._client.addListener('names', function(channel, nicks){
+      _this.emit('message', {
+        event: 'names',
+        data:{
+          server: _this._server,
+          channel: channel,
+          nicks: nicks
+        } 
+      });
+    });
+    
     this._client.addListener('error', function(message) {
         _this.postError(message);
     });
