@@ -74,6 +74,14 @@ function handleUserLeft(data){
 	});
 }
 
+function handleInfo(data){
+  Server.findById(data.server._id, function(err, server){
+    if(_.has(connectedClients, server.user)){
+    	connectedClients[server.user].emit('connection-info-received', {server:data.server._id,  info: data.info});
+    }
+	});
+}
+
 function handleError(data){
 	console.log('Worker reported error: '+data.msg);
 }
@@ -103,6 +111,9 @@ function startWorker(server){
         break;
       case 'user-left':
         handleUserLeft(e.data);
+        break;
+      case 'connection-info':
+        handleInfo(e.data);
         break;
 			default:
 				handleError(e.data);
@@ -222,6 +233,13 @@ module.exports = function(app, io){
 						workers[data.server].say(data.channel, data.message);
 					}else{
 						console.log('Tried to send message without connecting to server');
+					}
+				});
+        socket.on('get-server-info', function(data){
+					if(typeof(workers[data.server]) !== 'undefined'){
+						workers[data.server].getInfo();
+					}else{
+						console.log('Tried to get server-info without connecting to server');
 					}
 				});
 				socket.on('get-messages', function(data){

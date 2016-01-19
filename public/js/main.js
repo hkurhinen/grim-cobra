@@ -37,6 +37,7 @@
 		
 		function addServer(server){
 			$('ul.sidebar-nav').append('<li data-server="'+server._id+'" class="server-container">'+server.host+'<span class="add-channel glyphicon glyphicon-plus"></span><ul></ul></li>');
+      socket.emit('get-server-info', {server: server._id});
     }
 		
 		function addChannel(server, channel){
@@ -61,17 +62,31 @@
 			switchChannel(server, channel);
 		};
 		
-    function replaceUserList(server, channel, users){
+    function replaceUserList(server, channel, nicks){
+      var ops = [];
+      var voices = [];
+      var users = [];
+      for(var nick in nicks){
+        if(nicks.hasOwnProperty(nick)){
+          if(nicks[nick] == '@'){
+            ops.push(nick);
+          }else if(nicks[nick] == '+'){
+            voices.push(nick);
+          }else{
+            users.push(nick);
+          }
+        }
+      }
       var channelElement = $('.channel[data-server="'+server+'"][data-channel="'+channel+'"]');
 			channelElement.find('.channel-users').empty();
-      for(var i = 0; i < users.ops.length; i++){
-        channelElement.find('.channel-users').append('<li data-level="@" data-nick="'+users.ops[i]+'">@'+users.ops[i]+'</li>');
+      for(var i = 0; i < ops.length; i++){
+        channelElement.find('.channel-users').append('<li data-level="@" data-nick="'+ops[i]+'">@'+ops[i]+'</li>');
       }
-      for(var i = 0; i < users.voices.length; i++){
-        channelElement.find('.channel-users').append('<li data-level="+" data-nick="'+users.voices[i]+'">+'+users.voices[i]+'</li>');
+      for(var i = 0; i < voices.length; i++){
+        channelElement.find('.channel-users').append('<li data-level="+" data-nick="'+voices[i]+'">+'+voices[i]+'</li>');
       }
-      for(var i = 0; i < users.users.length; i++){
-        channelElement.find('.channel-users').append('<li data-level="" data-nick="'+users.users[i]+'">'+users.users[i]+'</li>');
+      for(var i = 0; i < users.length; i++){
+        channelElement.find('.channel-users').append('<li data-level="" data-nick="'+users[i]+'">'+users[i]+'</li>');
       }
     }
     
@@ -245,21 +260,7 @@
         });
         
         socket.on('names', function(data){
-          var ops = [];
-          var voices = [];
-          var users = [];
-          for(var nick in data.nicks){
-            if(data.nicks.hasOwnProperty(nick)){
-              if(data.nicks[nick] == '@'){
-                ops.push(nick);
-              }else if(data.nicks[nick] == '+'){
-                voices.push(nick);
-              }else{
-                users.push(nick);
-              }
-            }
-          }
-          replaceUserList(data.server, data.channel, {ops: ops, voices: voices, users: users});
+          replaceUserList(data.server, data.channel, data.nicks);
         });
 				
 				socket.on('previous-messages', function(data){
@@ -268,6 +269,14 @@
 					}
 				});
 				
+        socket.on('connection-info-received', function(data){   
+          for(var channel in data.info){
+            if(data.info.hasOwnProperty(channel)){
+              replaceUserList(data.server, channel, data.info[channel].users);
+            }
+          }
+        });
+        
 				socket.on('file-uploaded', function(data){
 					var target = $('.channel.active');
 					socket.emit('send-message', {server:target.attr('data-server'), channel: target.attr('data-channel'), message: window.location.href+'usercontent/'+data.id});
