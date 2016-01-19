@@ -1,28 +1,32 @@
 {
-    "name" : "grim-cobra", 
-    "description" : "Cloud based IRC-service to make following your favourite IRC-channels easier.",
-    "keywords" : ["irc", "cloud", "elemmings"],
-    "homepage" : "http://elemmings.fi",
-    "version" : "0.0.1",
-    "author" : {
-        "name" : "Heikki Kurhinen",
-        "url" : "http://elemmings.fi"
-    },
-    "contributors" : [],
-    "repository" : {
-        "type" : "git",
-        "url" : "https://github.com/hkurhinen/grim-cobra"
-    },
-    "bugs" : "https://github.com/hkurhinen/grim-cobra/issues",
-    "dependencies" : { 
-        "mongoose" : "*",
-		"socket.io" : "*",
-		"express" : "*",
-        "socketio-auth" : "*",
-        "irc" : "*",
-        "webworker-threads" : "*",
-        "underscore": "*",
-        "async": "*",
-        "bcrypt": "*"
-    }
+  "name": "grim-cobra",
+  "description": "Cloud based IRC-service to make following your favourite IRC-channels easier.",
+  "keywords": [
+    "irc",
+    "cloud",
+    "elemmings"
+  ],
+  "homepage": "http://elemmings.fi",
+  "version": "0.0.1",
+  "author": {
+    "name": "Heikki Kurhinen",
+    "url": "http://elemmings.fi"
+  },
+  "contributors": [],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hkurhinen/grim-cobra"
+  },
+  "bugs": "https://github.com/hkurhinen/grim-cobra/issues",
+  "dependencies": {
+    "mongoose": "*",
+    "socket.io": "*",
+    "express": "*",
+    "socketio-auth": "*",
+    "irc": "*",
+    "webworker-threads": "*",
+    "underscore": "*",
+    "async": "*",
+    "bcrypt": "*"
+  }
 }
