@@ -95,8 +95,16 @@ var Worker = function(server){
                    channel: channel
                } 
             });
+        } else {
+          _this.emit('message', {
+            event: 'user-joined',
+            data:{
+              server: _this._server,
+              channel: channel,
+              user: nick
+            } 
+          });
         }
-        //TODO: add support for updating user list
     });
     
     this._client.addListener('part', function(channel, nick, reason, message) {
@@ -109,6 +117,15 @@ var Worker = function(server){
                    channel: channel
                } 
             });
+        } else {
+          _this.emit('message', {
+            event: 'user-left',
+            data:{
+              server: _this._server,
+              channel: channel,
+              user: nick
+            } 
+          });
         }
         //TODO: add support for updating user list
     });
