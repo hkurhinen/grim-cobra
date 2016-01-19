@@ -37,7 +37,7 @@
 		
 		function addServer(server){
 			$('ul.sidebar-nav').append('<li data-server="'+server._id+'" class="server-container">'+server.host+'<span class="add-channel glyphicon glyphicon-plus"></span><ul></ul></li>');
-		}
+    }
 		
 		function addChannel(server, channel){
 			$('ul.sidebar-nav').find('.server-container[data-server="'+server+'"] > ul').append( 
@@ -235,6 +235,14 @@
 				socket.on('parted-channel', function(data){
 					removeChannel(data.server, data.channel);
 				});
+        
+        socket.on('user-joined', function(data){
+          addUser(data.server, data.channel, data.user);
+        });
+        
+        socket.on('user-left', function(data){
+          removeUser(data.server, data.channel, data.user);
+        });
         
         socket.on('names', function(data){
           var ops = [];

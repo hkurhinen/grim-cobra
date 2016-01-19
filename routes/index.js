@@ -58,6 +58,22 @@ function handleNames(data){
 	});
 }
 
+function handleUserJoin(data){
+  Server.findById(data.server._id, function(err, server){
+    if(_.has(connectedClients, server.user)){
+    	connectedClients[server.user].emit('user-joined', {server:data.server._id,  channel:data.channel, user: data.user});
+    }
+	});
+}
+
+function handleUserLeft(data){
+  Server.findById(data.server._id, function(err, server){
+    if(_.has(connectedClients, server.user)){
+    	connectedClients[server.user].emit('user-left', {server:data.server._id,  channel:data.channel, user: data.user});
+    }
+	});
+}
+
 function handleError(data){
 	console.log('Worker reported error: '+data.msg);
 }
@@ -68,7 +84,7 @@ function startWorker(server){
 		var eventType = e.event;
 		switch(eventType) {
 			case 'message':
-			  	handleMessage(e.data);
+			  handleMessage(e.data);
 				break;
 			case 'pm':
 				handlePm(e.data);
@@ -81,6 +97,12 @@ function startWorker(server){
 				break;
       case 'names':
         handleNames(e.data);
+        break;
+      case 'user-joined':
+        handleUserJoin(e.data);
+        break;
+      case 'user-left':
+        handleUserLeft(e.data);
         break;
 			default:
 				handleError(e.data);
