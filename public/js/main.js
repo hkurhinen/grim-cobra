@@ -3,25 +3,25 @@
   $(document).ready(function () {
 
     var newServerDialog = '<div class="form-horizontal">' +
-						'  <div class="form-group">' +
-						'    <label for="new-server-host" class="col-sm-2 control-label">Host</label>' +
-						'    <div class="col-sm-10">' +
-						'      <input type="text" class="form-control" id="new-server-host" placeholder="Host">' +
-						'    </div>' +
-						'  </div>' +
-						'  <div class="form-group">' +
-						'    <label for="new-server-port" class="col-sm-2 control-label">Port</label>' +
-						'    <div class="col-sm-10">' +
-						'      <input type="text" class="form-control" id="new-server-port" placeholder="Port">' +
-						'    </div>' +
-						'  </div>' +
-						'  <div class="form-group">' +
-						'    <label for="new-server-nick" class="col-sm-2 control-label">Nick</label>' +
-						'    <div class="col-sm-10">' +
-						'      <input type="text" class="form-control" id="new-server-nick" placeholder="Nick">' +
-						'    </div>' +
-						'  </div>' +
-						'</div>';
+      '  <div class="form-group">' +
+      '    <label for="new-server-host" class="col-sm-2 control-label">Host</label>' +
+      '    <div class="col-sm-10">' +
+      '      <input type="text" class="form-control" id="new-server-host" placeholder="Host">' +
+      '    </div>' +
+      '  </div>' +
+      '  <div class="form-group">' +
+      '    <label for="new-server-port" class="col-sm-2 control-label">Port</label>' +
+      '    <div class="col-sm-10">' +
+      '      <input type="text" class="form-control" id="new-server-port" placeholder="Port">' +
+      '    </div>' +
+      '  </div>' +
+      '  <div class="form-group">' +
+      '    <label for="new-server-nick" class="col-sm-2 control-label">Nick</label>' +
+      '    <div class="col-sm-10">' +
+      '      <input type="text" class="form-control" id="new-server-nick" placeholder="Nick">' +
+      '    </div>' +
+      '  </div>' +
+      '</div>';
 
     var servers = [];
     var socket;
