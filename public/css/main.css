@@ -22,10 +22,15 @@ html, body
 .add-channel {
 	cursor: pointer;
 }
-.channel-messages {
+.channel-container {
 	overflow: auto;
 	font-size: 12px;
 	line-height: 1;
+}
+.channel-user-container {
+  position: fixed;
+  right: 0px;
+  margin-right: 50px;
 }
 .channel-users {
   list-style-type: none;
