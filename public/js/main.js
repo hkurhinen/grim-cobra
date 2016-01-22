@@ -47,11 +47,11 @@
       $('.channels').append(
         '<div class="channel" data-server="' + server + '" data-channel="' + channel + '">' +
         ' <div class="panel panel-success">' +
-        '   <div class="panel-heading"><h3 class="panel-title">' + channel + ' @ ' + getServerData(server).host + '</h3></div>' +
+        '   <div class="panel-heading"><h3 class="panel-title">' + channel + ' @ ' + getServerData(server).host + ' <small class="channel-topic"></small></h3></div>' +
         '   <div class="panel-body channel-container">' +
         '     <div class="row">' +
         '       <div class="col-xs-10 channel-messages"></div>' +
-        '       <div class="col-xs-2"><ul class="channel-users pull-right"></ul></div>' +
+        '       <div class="col-xs-2 channel-user-container hidden-xs"><ul class="channel-users pull-right"></ul></div>' +
         '     </div>' +
         '   </div>' +
         ' </div>' +
@@ -61,6 +61,11 @@
       handleResize();
       switchChannel(server, channel);
     };
+
+    function setTopic(server, channel, topic){
+      var channelElement = $('.channel[data-server="' + server + '"][data-channel="' + channel + '"]');
+      channelElement.find('.channel-topic').text(topic);
+    }
 
     function replaceUserList(server, channel, nicks) {
       var ops = [];
@@ -270,9 +275,11 @@
         });
 
         socket.on('connection-info-received', function (data) {
+          console.log(data);
           for (var channel in data.info) {
             if (data.info.hasOwnProperty(channel)) {
               replaceUserList(data.server, channel, data.info[channel].users);
+              setTopic(data.server, channel, data.info[channel].topic);
             }
           }
         });
