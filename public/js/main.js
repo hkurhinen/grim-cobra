@@ -135,6 +135,10 @@
       var messagesHeight = $(window).height() - 200;
       $('.channel-container').css('height', messagesHeight + 'px');
     }
+    
+    function sendMessage(server, channel, message){
+      socket.emit('send-message', { server: server, channel: channel, message: message });
+    }
 
     function showConnectToServerDialog() {
       bootbox.dialog({
@@ -168,7 +172,7 @@
     $('#send-message-button').button().click(function () {
       var target = $('.channel.active');
       var message = $('#message-content').val();
-      socket.emit('send-message', { server: target.attr('data-server'), channel: target.attr('data-channel'), message: message });
+      sendMessage(target.attr('data-server'), target.attr('data-channel'), message);
       $('#message-content').val('');
     });
 
@@ -268,6 +272,10 @@
           replaceUserList(data.server, data.channel, data.nicks);
         });
 
+        socket.on('topic-updated', function(data){
+          setTopic(data.server, data.channel, data.topic);
+        });
+
         socket.on('previous-messages', function (data) {
           for (var i = 0; i < data.messages.length; i++) {
             addMessage(data.messages[i]);
@@ -286,7 +294,7 @@
 
         socket.on('file-uploaded', function (data) {
           var target = $('.channel.active');
-          socket.emit('send-message', { server: target.attr('data-server'), channel: target.attr('data-channel'), message: window.location.href + 'usercontent/' + data.id });
+          sendMessage(target.attr('data-server'), target.attr('data-channel'), window.location.href + 'usercontent/' + data.id);
         });
 
         $('#logoutBtn').button().click(function () {
@@ -308,7 +316,7 @@
           var keycode = (event.keyCode ? event.keyCode : event.which);
           if (keycode == '13') {
             var target = $('.channel.active');
-            socket.emit('send-message', { server: target.attr('data-server'), channel: target.attr('data-channel'), message: $('#message-content').val() });
+            sendMessage(target.attr('data-server'), target.attr('data-channel'), $('#message-content').val());
             $('#message-content').val('');
           }
         });

@@ -82,6 +82,14 @@ function handleInfo(data) {
   });
 }
 
+function handleTopic(data) {
+  Server.findById(data.server._id, function (err, server) {
+    if (_.has(connectedClients, server.user)) {
+      connectedClients[server.user].emit('topic-updated', { server: data.server._id, channel: data.channel, topic: data.topic });
+    }
+  });
+}
+
 function handleError(data) {
   console.log('Worker reported error: ' + data.msg);
 }
@@ -114,6 +122,9 @@ function startWorker(server) {
         break;
       case 'connection-info':
         handleInfo(e.data);
+        break;
+      case 'topic':
+        handleTopic(e.data);
         break;
       default:
         handleError(e.data);

@@ -152,6 +152,17 @@ var Worker = function (server) {
     });
   });
 
+  this._client.addListener('topic', function (channel, topic, nick, message) {
+    _this.emit('message', {
+      event: 'topic',
+      data: {
+        server: _this._server,
+        channel: channel,
+        topic: topic
+      }
+    });
+  });
+
   this._client.addListener('error', function (message) {
     _this.postError(message);
   });
